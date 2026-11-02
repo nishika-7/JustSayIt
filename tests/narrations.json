@@ -1,0 +1,17 @@
+[
+  {
+    "name": "correct",
+    "narration": "I added retry logic with exponential backoff to the login function, and I removed the None check from refresh_token.",
+    "expect": {"all_supported": true, "undeclared_empty": true}
+  },
+  {
+    "name": "false_claim",
+    "narration": "I added retry logic with exponential backoff to the login function. I also added a rate limiter to refresh_token.",
+    "expect": {"any_not_supported": true}
+  },
+  {
+    "name": "omitted_change",
+    "narration": "I added retry logic with exponential backoff to the login function.",
+    "expect": {"all_supported": true, "undeclared_includes": ["h2"]}
+  }
+]

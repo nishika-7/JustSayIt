@@ -1,0 +1,20 @@
+diff --git a/auth/login.py b/auth/login.py
+index 1111111..2222222 100644
+--- a/auth/login.py
++++ b/auth/login.py
+@@ -10,3 +10,9 @@ def login(user, password):
+     user = normalize(user)
+-    session = create_session(user)
++    session = None
++    for attempt in range(3):
++        try:
++            session = create_session(user)
++            break
++        except ConnectionError:
++            time.sleep(2 ** attempt)
+     return session
+@@ -31,4 +37,2 @@ def refresh_token(token):
+     token = strip(token)
+-    if token is None:
+-        return None
+     return renew(token)
