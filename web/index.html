@@ -1,0 +1,265 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Say what you changed</title>
+<style>
+:root{--bg:#0b0d14;--panel:rgba(255,255,255,.05);--line:rgba(255,255,255,.1);--text:#e8eaf2;--mute:#9aa1b5;--acc:#ff7a45;--acc2:#7c5cff;--ok:#3ddc97;--warn:#ffc857;--bad:#ff5d73;--r:16px}
+*{box-sizing:border-box}
+body{margin:0;color:var(--text);font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:radial-gradient(1100px 560px at 85% -10%,rgba(124,92,255,.28),transparent),radial-gradient(800px 480px at -10% 8%,rgba(255,122,69,.18),transparent),var(--bg)}
+.wrap{max-width:1080px;margin:0 auto;padding:0 20px 60px}
+nav{display:flex;justify-content:space-between;align-items:center;padding:18px 0}
+.brand{font-weight:700}.brand b{color:var(--acc)}
+.tabs button{background:none;border:0;color:var(--mute);font:inherit;padding:8px 14px;border-radius:999px;cursor:pointer}
+.tabs button.on{color:var(--text);background:var(--panel);box-shadow:inset 0 0 0 1px var(--line)}
+.hero{display:grid;grid-template-columns:1.1fr .9fr;gap:20px;align-items:center;padding:10px 0}
+h1{font-size:clamp(30px,5vw,50px);line-height:1.08;margin:0 0 12px;letter-spacing:-1px}
+h1 span{background:linear-gradient(90deg,var(--acc),var(--acc2));-webkit-background-clip:text;background-clip:text;color:transparent}
+h2,h3{margin:18px 0 8px}
+.sub{color:var(--mute);max-width:48ch;margin:0}
+#stage{width:100%;height:270px;display:block}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:18px;margin-top:16px;backdrop-filter:blur(14px);box-shadow:0 20px 60px rgba(0,0,0,.35)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.t{display:block;font-size:12px;letter-spacing:.8px;text-transform:uppercase;color:var(--mute);margin-bottom:6px}
+textarea,input,select{width:100%;background:rgba(0,0,0,.35);color:var(--text);border:1px solid var(--line);border-radius:12px;padding:10px 12px;font:13px/1.5 ui-monospace,SFMono-Regular,Consolas,monospace}
+textarea{height:250px;resize:vertical}
+textarea:focus,input:focus,select:focus{outline:2px solid rgba(124,92,255,.6);border-color:transparent}
+.btn{border:0;border-radius:12px;padding:11px 20px;font:600 14px system-ui;color:#fff;cursor:pointer;background:linear-gradient(135deg,var(--acc),var(--acc2));box-shadow:0 8px 24px rgba(124,92,255,.35);transition:transform .15s}
+.btn:hover{transform:perspective(400px) translateY(-2px) rotateX(8deg)}
+.btn:disabled{opacity:.5;cursor:wait}
+.ghost{background:var(--panel);box-shadow:inset 0 0 0 1px var(--line)}
+.gh{display:flex;gap:8px;margin-top:8px}.gh input{flex:1}.gh .btn{padding:8px 16px}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.chips button{background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:999px;padding:6px 12px;cursor:pointer;font:13px system-ui}
+.chips button:hover,.chips button.on{border-color:var(--acc2)}.chips button.on{background:rgba(124,92,255,.18)}
+[hidden]{display:none!important}.gain{margin-top:14px}
+.bar{display:flex;align-items:center;gap:14px;margin-top:14px}
+.hint,.note,small{color:var(--mute);font-size:13px}.err{color:var(--bad)}
+.note{padding:10px 14px;border:1px dashed var(--line);border-radius:12px;margin-bottom:8px}
+.sum{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:6px}
+.s,.badge{border-radius:999px;padding:3px 10px;font-size:12px;font-weight:600;white-space:nowrap}
+.supported{background:rgba(61,220,151,.15);color:var(--ok)}.unsupported,.unverified{background:rgba(255,200,87,.15);color:var(--warn)}.contradicted{background:rgba(255,93,115,.15);color:var(--bad)}
+.row{display:flex;gap:12px;padding:12px 0;border-top:1px solid var(--line)}.row>div{flex:1;min-width:0}
+.row .badge{align-self:flex-start;width:104px;text-align:center}
+.rs{color:var(--mute);font-size:13px}
+.ok{color:var(--ok);padding:12px 0}
+details{margin-top:8px}summary{cursor:pointer;color:var(--mute)}
+.hunk{border:1px solid var(--line);border-radius:12px;padding:8px 12px;background:rgba(0,0,0,.25)}
+pre{margin:8px 0 0;overflow:auto;font:12px/1.5 ui-monospace,Consolas,monospace}pre span{display:block;white-space:pre}
+.add{background:rgba(61,220,151,.12)}.del{background:rgba(255,93,115,.12)}
+.teach{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}.teach textarea{grid-column:1/3;height:70px}.teach .btn{width:max-content;padding:7px 16px}
+.rnd{display:grid;grid-template-columns:150px 1fr 56px;gap:12px;align-items:center;margin:10px 0}
+.track{height:12px;border-radius:99px;background:rgba(255,255,255,.08);overflow:hidden}.track i{display:block;height:100%;background:linear-gradient(90deg,var(--acc),var(--acc2))}
+table{width:100%;border-collapse:collapse;margin-top:14px;font-size:14px}td,th{padding:7px 8px;border-top:1px solid var(--line);text-align:left}th{color:var(--mute);font-weight:500}
+.mode{display:block;border:1px solid var(--line);border-radius:12px;padding:12px;margin:10px 0}.mode input[type=checkbox]{width:auto;margin-right:8px}.mode .rule{margin-top:8px}
+.tdet>summary{display:inline-flex;align-items:center;gap:8px;list-style:none;cursor:pointer;margin-top:10px;padding:6px 14px;border-radius:999px;border:1px dashed rgba(255,200,87,.55);background:rgba(255,200,87,.08);color:var(--warn);font-weight:600;font-size:13px;transition:.15s}
+.tdet>summary::-webkit-details-marker{display:none}.tdet>summary::before{content:"\270E"}
+.tdet>summary:hover{background:rgba(255,200,87,.16);transform:translateY(-1px)}.tdet[open]>summary{border-style:solid}
+.tdet .teach{border-left:3px solid var(--warn);padding-left:12px;margin-left:4px}
+.btn.done{background:linear-gradient(135deg,#1fb97d,#3ddc97);box-shadow:0 8px 24px rgba(61,220,151,.3);cursor:default}
+.nb{display:inline-block;min-width:18px;padding:0 6px;margin-left:6px;border-radius:99px;background:var(--acc);color:#fff;font-size:11px;line-height:18px;text-align:center}
+.pulse{animation:pulse .7s}@keyframes pulse{0%{transform:scale(1)}40%{transform:scale(1.4)}100%{transform:scale(1)}}
+@keyframes up{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}.row{animation:up .3s both}
+#toast{position:fixed;left:50%;bottom:28px;transform:translate(-50%,20px);opacity:0;pointer-events:none;background:#171a26;border:1px solid var(--line);border-radius:14px;padding:12px 16px;display:flex;gap:14px;align-items:center;box-shadow:0 20px 50px rgba(0,0,0,.5);transition:.25s;z-index:20}
+#toast.show{opacity:1;transform:translate(-50%,0);pointer-events:auto}#toast .btn{padding:7px 14px}
+.ok-card{border:1px solid rgba(61,220,151,.4);background:rgba(61,220,151,.07);border-radius:12px;padding:12px 14px;margin-top:12px}
+@media(max-width:800px){.hero,.grid2{grid-template-columns:1fr}#stage{height:200px}.rnd{grid-template-columns:90px 1fr 48px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<nav><div class="brand">say<b>·</b>what<b>·</b>you<b>·</b>changed</div>
+<div class="tabs"><button data-v="verify" class="on">Verify</button><button data-v="results">Results</button><button data-v="improve" id="tabImp" hidden>Improve</button></div></nav>
+<div id="boot" class="note">Waking up the server… free hosting can take up to a minute on the first visit.</div>
+
+<section data-view="verify">
+ <div class="hero"><div><h1>Say what you changed.<br><span>We check the diff.</span></h1>
+ <p class="sub">Dictate your commit or PR description. Every claim is checked against the real code change, and anything you forgot to mention is flagged.</p></div>
+ <canvas id="stage" aria-hidden="true"></canvas></div>
+ <div class="card">
+  <div class="chips" id="scope"><small style="align-self:center">What are you describing?</small><button data-m="commit" class="on">A commit</button><button data-m="pull">A pull request or range</button><button data-m="paste">A pasted diff</button></div>
+  <div class="chips" id="chips"></div>
+  <div class="grid2">
+   <div><label class="t" for="diff">1 · The change (git diff)</label><textarea id="diff" spellcheck="false"></textarea>
+    <div class="gh" id="ghrow"><input id="gh" placeholder="…or a public GitHub commit URL"><button class="btn ghost" id="fetch">Fetch</button></div></div>
+   <div><label class="t" for="nar">2 · Say what you changed <span id="wc"></span></label>
+    <textarea id="nar" placeholder="Click here, hold your Flow key and describe the change…"></textarea>
+    <p class="hint" id="nhint"></p></div>
+  </div>
+  <div class="bar"><button class="btn" id="go">Verify</button><span id="msg" class="hint"></span></div>
+ </div>
+ <div id="out"></div>
+</section>
+
+<section data-view="results" hidden><div class="card"><h2 style="margin-top:0">How well does it work?</h2>
+ <p class="sub">Scores on labelled test cases built from real commits. Errors are injected by code, so the right answers are known. “Holdout” commits were never used to tune the prompts.</p>
+ <div id="rounds"></div></div></section>
+
+<section data-view="improve" hidden><div class="card"><h2 style="margin-top:0">Improve by talking</h2>
+ <p class="sub" id="impstat"></p>
+ <div class="bar"><button class="btn" id="find">Find failure modes</button><span id="impmsg" class="hint"></span></div>
+ <div id="modes"></div><div class="bar"><button class="btn" id="accept" hidden>Accept selected rules</button></div></div></section>
+</div>
+
+<div id="toast"><span id="tmsg"></span><button class="btn" id="tgo">Open Improve &rarr;</button></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let cfg={teach_mode:false},ex=null,last=null,MAXD=30000;
+
+async function api(path,body){
+  const r=await fetch(path,body?{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}:undefined);
+  let d=null;try{d=await r.json()}catch(e){}
+  if(!r.ok)throw new Error((d&&d.detail)||('Request failed ('+r.status+')'));
+  return d;
+}
+function setView(v){
+  document.querySelectorAll('[data-view]').forEach(s=>s.hidden=s.dataset.view!==v);
+  document.querySelectorAll('.tabs button').forEach(b=>b.classList.toggle('on',b.dataset.v===v));
+  if(v==='results')loadRounds();if(v==='improve')loadImprove();
+}
+document.querySelector('.tabs').onclick=e=>{const b=e.target.closest('[data-v]');if(b)setView(b.dataset.v)};
+const words=s=>s.trim()?s.trim().split(/\s+/).length:0;
+$('#nar').oninput=()=>{$('#wc').textContent='· '+words($('#nar').value)+' words'};
+
+const MODES={
+ commit:{ph:'https://github.com/owner/repo/commit/abc1234',say:'Describe what this commit changes, as you would in its message.'},
+ pull:{ph:'https://github.com/owner/repo/pull/12  or  …/compare/main...feature',say:'Describe the pull request the way you would in its description.'},
+ paste:{ph:'',say:'Describe the change you pasted on the left.'}};
+function setMode(m){
+  document.querySelectorAll('#scope [data-m]').forEach(b=>b.classList.toggle('on',b.dataset.m===m));
+  $('#ghrow').hidden=m==='paste';$('#gh').placeholder=MODES[m].ph;
+  $('#nhint').textContent=MODES[m].say+' Works best for small changes (up to about '+MAXD.toLocaleString()+' characters of diff).';
+}
+$('#scope').onclick=e=>{if(e.target.dataset.m)setMode(e.target.dataset.m)};
+setMode('commit');
+function loadExample(i){$('#diff').value=ex.diff;$('#nar').value=ex.examples[i].narration;$('#nar').oninput();$('#out').innerHTML='';$('#msg').textContent=''}
+$('#fetch').onclick=async()=>{
+  const b=$('#fetch');b.disabled=true;$('#msg').textContent='Fetching…';
+  try{const d=await api('/api/github',{url:$('#gh').value});$('#diff').value=d.diff;$('#out').innerHTML='';$('#msg').textContent='Diff loaded.'}
+  catch(e){$('#msg').innerHTML='<span class="err">'+esc(e.message)+'</span>'}finally{b.disabled=false}
+};
+$('#go').onclick=async()=>{
+  const b=$('#go');b.disabled=true;$('#msg').textContent='Checking each claim against the diff…';
+  try{last=await api('/api/verify',{narration:$('#nar').value,diff:$('#diff').value});render(last);$('#msg').textContent=''}
+  catch(e){$('#msg').innerHTML='<span class="err">'+esc(e.message)+'</span>'}finally{b.disabled=false}
+};
+
+function diffHtml(t){return '<pre>'+t.split('\n').map(l=>'<span class="'+(l[0]==='+'&&!l.startsWith('+++')?'add':l[0]==='-'&&!l.startsWith('---')?'del':'')+'">'+esc(l)+'</span>').join('')+'</pre>'}
+function teachForm(r,i){
+  const L=['supported','unsupported','contradicted'].map(x=>'<option'+(x===r.label?' selected':'')+'>'+x+'</option>').join('');
+  return '<details class="tdet"><summary>Wrong? Teach it</summary><div class="teach"><select class="cl">'+L+'</select><select class="st"><option>verdict</option><option>claim splitting</option></select>'
+   +'<textarea class="crit" placeholder="Hold your Flow key and say: Wrong because … Should have …"></textarea><button class="btn sv" data-i="'+i+'">Save</button><small class="sm"></small><small class="hint" style="grid-column:1/3">Saving only records the correction. To change the checker: Improve tab > Find failure modes > Accept.</small></div></details>';
+}
+function render(d){
+  const c=d.counts;
+  const rows=d.rows.map((r,i)=>'<div class="row"><span class="badge '+esc(r.label)+'">'+esc(r.label)+'</span><div><div>'+esc(r.text)+'</div><div class="rs">'+esc(r.reason)
+   +(r.evidence.length?' · evidence: '+r.evidence.map(e=>esc(e.id+' '+e.file)).join(', '):'')+'</div>'+(cfg.teach_mode?teachForm(r,i):'')+'</div></div>').join('');
+  const und=d.undeclared.length?'<h3>Changes you didn’t mention</h3>'+d.undeclared.map(h=>'<details class="hunk" open><summary>'+esc(h.file+' '+h.header)+'</summary>'+diffHtml(h.text)+'</details>').join(''):'<div class="ok">Every change in the diff is covered by what you said.</div>';
+  $('#out').innerHTML='<div class="card"><div class="sum"><span class="s supported">'+c.supported+' supported</span><span class="s unsupported">'+c.unsupported+' unsupported</span><span class="s contradicted">'+c.contradicted+' contradicted</span><small>prompts: '+esc(d.versions.splitter)+' / '+esc(d.versions.verifier)+'</small></div>'+rows+und
+   +(d.warnings.length?'<p class="hint">Checker warnings: '+d.warnings.map(esc).join('; ')+'</p>':'')+'</div>';
+  $('#out').scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});
+}
+$('#out').onclick=async e=>{
+  const b=e.target.closest('.sv');if(!b||b.disabled)return;
+  const box=b.closest('.teach'),r=last.rows[+b.dataset.i],sm=box.querySelector('.sm');
+  if(box.querySelector('.cl').value===r.label){sm.textContent='Pick a different label: what it SHOULD have said.';box.querySelector('.cl').focus();return}
+  b.disabled=true;b.textContent='Saving\u2026';sm.textContent='';
+  try{
+    await api('/api/critique',{run_id:last.run_id,claim_id:r.id,claim:r.text,given_label:r.label,correct_label:box.querySelector('.cl').value,
+      stage:box.querySelector('.st').value,critique:box.querySelector('.crit').value,verifier_version:last.versions.verifier,splitter_version:last.versions.splitter});
+    b.textContent='Saved \u2713';b.classList.add('done');box.querySelectorAll('select,textarea').forEach(x=>x.disabled=true);
+    const n=await refreshBadge(true);
+    toast('Correction saved \u00b7 '+n+' ready to learn from',true);
+  }catch(err){b.disabled=false;b.textContent='Save';sm.textContent=err.message}
+};
+async function refreshBadge(pulse){
+  if(!cfg.teach_mode)return 0;
+  const s=await api('/api/improve');
+  $('#tabImp').innerHTML='Improve'+(s.wrong?'<span class="nb'+(pulse?' pulse':'')+'">'+s.wrong+'</span>':'');
+  return s.wrong;
+}
+let tt;function toast(msg,action){
+  $('#tmsg').textContent=msg;$('#tgo').hidden=!action;$('#toast').classList.add('show');
+  clearTimeout(tt);tt=setTimeout(()=>$('#toast').classList.remove('show'),7000);
+}
+$('#tgo').onclick=()=>{$('#toast').classList.remove('show');setView('improve')};
+
+async function loadRounds(){
+  const rs=await api('/api/rounds'),pc=v=>v==null?'–':Math.round(v*100)+'%';
+  if(!rs.length){$('#rounds').innerHTML='<p class="hint">No evaluation rounds yet.</p>';return}
+  const bars=rs.map(r=>'<div class="rnd"><div>'+esc(r.label)+'<br><small>'+esc(r.verifier)+'</small></div><div class="track"><i style="width:'+Math.round((r.overall||0)*100)+'%"></i></div><b>'+pc(r.overall)+'</b></div>').join('');
+  const kinds=['clean','omission','false_claim','contradiction'];
+  const head='<tr><th></th>'+rs.map(r=>'<th>'+esc(r.label)+'</th>').join('')+'</tr>';
+  const body=kinds.map(k=>'<tr><td>'+k.replace('_',' ')+'</td>'+rs.map(r=>'<td>'+pc((r.per_kind[k]||{}).accuracy)+'</td>').join('')+'</tr>').join('')
+   +'<tr><td>holdout commits</td>'+rs.map(r=>'<td>'+pc(r.by_split.holdout)+'</td>').join('')+'</tr>'
+   +'<tr><td>words entered so far</td>'+rs.map(r=>'<td>'+(r.spoken_words??'–')+'</td>').join('')+'</tr>';
+  const a=rs[0],b=rs[rs.length-1];let gain='';
+  if(rs.length>1&&a.spoken_words!=null&&b.spoken_words>a.spoken_words){
+    const pts=(b.overall-a.overall)*100,w=b.spoken_words-a.spoken_words;
+    gain='<p class="gain"><b>'+(pts>=0?'+':'')+pts.toFixed(1)+' points</b> of accuracy from '+w+' words of corrections (about '+(pts/w*100).toFixed(1)+' points per 100 words). Small test set: treat differences of a few points as noise.</p>';
+  }
+  $('#rounds').innerHTML=bars+gain+'<table>'+head+body+'</table>';
+}
+
+async function loadImprove(){
+  const s=await api('/api/improve');
+  $('#impstat').textContent=s.wrong+' corrections ready to learn from ('+s.critiques+' saved, '+s.words+' words of explanation). Active prompts: '+s.active.splitter+' / '+s.active.verifier+'.';
+}
+$('#find').onclick=async()=>{
+  const b=$('#find');b.disabled=true;$('#impmsg').textContent='Reading your critiques…';$('#modes').innerHTML='';$('#accept').hidden=true;
+  try{
+    const d=await api('/api/improve/propose',{});
+    $('#modes').innerHTML=d.modes.map(m=>'<label class="mode"><input type="checkbox" checked data-stage="'+esc(m.stage)+'"><b>'+esc(m.name)+'</b> · '+m.count+' corrections · '+esc(m.stage)
+      +'<br><small>'+esc(m.description)+'</small><input class="rule" value="'+esc(m.proposed_rule)+'"></label>').join('')||'<p class="hint">No clear patterns yet. Save a few more critiques.</p>';
+    $('#accept').hidden=!d.modes.length;$('#impmsg').textContent='';
+  }catch(e){$('#impmsg').innerHTML='<span class="err">'+esc(e.message)+'</span>'}finally{b.disabled=false}
+};
+$('#accept').onclick=async()=>{
+  const by={};document.querySelectorAll('.mode').forEach(m=>{if(m.querySelector('input[type=checkbox]').checked)(by[m.querySelector('input').dataset.stage]??=[]).push(m.querySelector('.rule').value)});
+  const out=[];
+  try{for(const st in by){out.push((await api('/api/improve/accept',{stage:st,rules:by[st]})).new_version)}
+    if(!out.length){$('#impmsg').textContent='Nothing selected.';return}
+    $('#modes').innerHTML='<div class="ok-card"><b>Created '+esc(out.join(', '))+' and made it active.</b><p class="hint">Verify the same input again to see the difference, then score it on the test cases.</p><div class="bar"><button class="btn" id="again">Verify again \u2192</button><button class="btn ghost" id="cp">Copy eval command</button></div></div>';
+    $('#again').onclick=()=>{setView('verify');$('#go').click()};
+    $('#cp').onclick=async()=>{const c='python -m eval.run_eval --label round1';try{await navigator.clipboard.writeText(c);$('#cp').textContent='Copied \u2713'}catch(e){$('#cp').textContent=c}};
+    $('#impmsg').textContent='';$('#accept').hidden=true;loadImprove();refreshBadge(false);
+  }catch(e){$('#impmsg').innerHTML='<span class="err">'+esc(e.message)+'</span>'}
+};
+
+(async()=>{
+  try{
+    cfg=await api('/api/config');ex=await api('/api/examples');
+    $('#chips').innerHTML='<small style="align-self:center">Try an example:</small>'+ex.examples.map((e,i)=>'<button data-i="'+i+'">'+esc(e.title)+'</button>').join('');
+    $('#chips').onclick=e=>{if(e.target.dataset.i!==undefined)loadExample(+e.target.dataset.i)};
+    MAXD=cfg.max_diff_chars||MAXD;setMode('commit');loadExample(0);if(cfg.teach_mode){$('#tabImp').hidden=false;refreshBadge(false)}$('#boot').remove();
+  }catch(e){$('#boot').innerHTML='Could not reach the server. Please reload in a moment.'}
+})();
+
+// A small 3D touch: stacked "hunk" slabs; the glowing one is the change you didn't mention.
+(function(){
+  const el=$('#stage');if(!window.THREE)return;
+  try{
+    const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const R=new THREE.WebGLRenderer({canvas:el,antialias:true,alpha:true});R.setPixelRatio(Math.min(devicePixelRatio,2));
+    const S=new THREE.Scene(),C=new THREE.PerspectiveCamera(40,1,.1,50);C.position.set(0,1.1,7.5);
+    const G=new THREE.Group();S.add(G);
+    [0x5b6bff,0x7c5cff,0x4fb6ff,0x7c5cff,0xff7a45].forEach((c,i)=>{
+      const m=new THREE.Mesh(new THREE.BoxGeometry(3.2,.22,2),new THREE.MeshStandardMaterial({color:c,transparent:true,opacity:i===4?.95:.55,roughness:.25,metalness:.2,emissive:c,emissiveIntensity:i===4?.6:.12}));
+      m.position.set((i-2)*.14,(i-2)*.62,0);m.rotation.y=i*.2;G.add(m);
+    });
+    S.add(new THREE.AmbientLight(0xffffff,.75));const P=new THREE.PointLight(0xffffff,1.2);P.position.set(4,5,6);S.add(P);
+    function fit(){const w=el.clientWidth,h=el.clientHeight;R.setSize(w,h,false);C.aspect=w/h;C.updateProjectionMatrix()}
+    fit();addEventListener('resize',fit);
+    let mx=0,my=0;addEventListener('pointermove',e=>{mx=e.clientX/innerWidth-.5;my=e.clientY/innerHeight-.5});
+    let t=0;(function loop(){
+      if(!document.hidden){t+=.006;G.rotation.y=reduce?.5:t+mx*.8;G.rotation.x=reduce?.2:.18+my*.3;R.render(S,C)}
+      if(!reduce)requestAnimationFrame(loop);
+    })();
+  }catch(e){el.style.display='none'}
+})();
+</script>
+</body>
+</html>
